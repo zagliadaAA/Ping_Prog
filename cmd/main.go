@@ -6,9 +6,11 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/go-ping/ping"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/joho/godotenv"
 	"gopkg.in/gomail.v2"
 )
@@ -21,6 +23,75 @@ func main() {
 
 	addr := os.Getenv("Address")
 	port, err := strconv.Atoi(os.Getenv("Port"))
+
+	// BOT-------------------------------------------------
+	var (
+		chatID      int64
+		chatIDLock  sync.Mutex
+		chatIDFile  = os.Getenv("ChatIDFileName")
+		botToken    = os.Getenv("TokenTelegramBot")
+		pingAddress = os.Getenv("Address")
+	)
+
+	bot, err := tgbotapi.NewBotAPI(botToken)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	log.Println("🤖 Бот запущен:", bot.Self.UserName)
+
+	// Загружаем сохранённый chatID (если есть)
+	chatID = loadChatIDFromFile(chatIDFile)
+
+	// Настраиваем обновления
+	u := tgbotapi.NewUpdate(0)
+	u.Timeout = 60
+	updates := bot.GetUpdatesChan(u)
+
+	// Запускаем фон для авто-пинга
+	go backgroundPing(bot, &chatIDLock, chatID, pingAddress)
+
+	for update := range updates {
+		if update.Message == nil || !update.Message.IsCommand() {
+			continue
+		}
+
+		chatIDLock.Lock()
+		if chatID == 0 {
+			chatID = update.Message.Chat.ID
+			saveChatIDToFile(chatID, chatIDFile)
+			log.Println("✅ Сохранил chatID:", chatID)
+		}
+		chatIDLock.Unlock()
+
+		switch update.Message.Command() {
+		case "ping":
+			err, pinger := commandPing(pingAddress)
+			var msgText string
+			if err != nil {
+				msgText = "❌ Ошибка пинга: " + err.Error()
+			} else {
+				stats := pinger.Statistics()
+				msgText = fmt.Sprintf("📡 Ping result:\nПотери: %.0f%%\nВремя: %v", stats.PacketLoss, stats.AvgRtt)
+				if stats.PacketLoss == 100 {
+					alert := tgbotapi.NewMessage(chatID, "🚨 Потеря 100% пакетов! Хост недоступен.")
+					bot.Send(alert)
+				}
+			}
+			msg := tgbotapi.NewMessage(chatID, msgText)
+			bot.Send(msg)
+
+		case "status":
+			msg := tgbotapi.NewMessage(chatID, "📊 Всё работает стабильно.")
+			bot.Send(msg)
+
+		default:
+			msg := tgbotapi.NewMessage(chatID, "Неизвестная команда 🤖")
+			bot.Send(msg)
+		}
+	}
+
+	//------------------------------------------------------------------
 
 	err, pinger := commandPing(addr)
 	if err != nil {
@@ -42,6 +113,52 @@ func main() {
 	}
 }
 
+// Фоновый пинг с тревогой
+func backgroundPing(bot *tgbotapi.BotAPI, chatIDLock *sync.Mutex, chatID int64, pingAddress string) {
+	for {
+		time.Sleep(30 * time.Second)
+
+		chatIDLock.Lock()
+		currentChatID := chatID
+		chatIDLock.Unlock()
+
+		if currentChatID == 0 {
+			continue
+		}
+
+		err, pinger := commandPing(pingAddress)
+		if err != nil {
+			log.Println("Ошибка пинга:", err)
+			continue
+		}
+
+		if pinger.Statistics().PacketLoss == 100 {
+			alert := tgbotapi.NewMessage(currentChatID, "🚨 Потеря 100% пакетов! Хост недоступен.")
+			bot.Send(alert)
+		}
+	}
+}
+
+// Загружаем chatID из файла (если есть)
+func loadChatIDFromFile(chatIDFile string) int64 {
+	data, err := os.ReadFile(chatIDFile)
+	if err != nil {
+		return 0
+	}
+	var id int64
+	fmt.Sscanf(string(data), "%d", &id)
+	return id
+}
+
+// Сохраняем chatID в файл
+func saveChatIDToFile(id int64, chatIDFile string) {
+	f, err := os.Create(chatIDFile)
+	if err == nil {
+		defer f.Close()
+		fmt.Fprintf(f, "%d", id)
+	}
+}
+
 // команда ping
 func commandPing(addr string) (error, *ping.Pinger) {
 	pinger, err := ping.NewPinger(addr)
@@ -49,9 +166,9 @@ func commandPing(addr string) (error, *ping.Pinger) {
 		return fmt.Errorf("ошибка создания pinger"), pinger
 	}
 
-	pinger.Count = 5
-	pinger.Timeout = 1 * time.Second
-	pinger.SetPrivileged(true)
+	pinger.Count = 4
+	pinger.Timeout = 2 * time.Second
+	pinger.SetPrivileged(false)
 
 	err = pinger.Run()
 	if err != nil {
