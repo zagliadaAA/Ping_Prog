@@ -1,22 +1,21 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net"
-	"os"
-	"strconv"
-	"sync"
-	"time"
+	"net/http"
 
-	"github.com/go-ping/ping"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"github.com/joho/godotenv"
-	"gopkg.in/gomail.v2"
+	"ping_prog/cmd/service_provider"
 )
 
 func main() {
-	err := godotenv.Load()
+	sp := service_provider.NewServiceProvider()
+
+	// запуск сервера
+	err := http.ListenAndServe(":8080", sp.GetRoutes())
+	if err != nil {
+		panic(err)
+	}
+
+	/*err := godotenv.Load()
 	if err != nil { //письмо не отправится
 		log.Fatal("Error loading .env file")
 	}
@@ -110,9 +109,10 @@ func main() {
 		if portStatus == false {
 			sendEmail(err, pinger, false)
 		}
-	}
+	}*/
 }
 
+/*
 // Фоновый пинг с тревогой
 func backgroundPing(bot *tgbotapi.BotAPI, chatIDLock *sync.Mutex, chatID int64, pingAddress string) {
 	for {
@@ -225,3 +225,4 @@ func sendEmail(err error, pinger *ping.Pinger, portStatus bool) {
 		fmt.Println("Письмо отправлено")
 	}
 }
+*/
