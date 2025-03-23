@@ -2,7 +2,6 @@ package signal_usecase
 
 import (
 	"fmt"
-	"time"
 
 	"ping_prog/internal/domain"
 )
@@ -14,7 +13,7 @@ type CreateSignalReq struct {
 
 func (uc *UseCase) Create(req CreateSignalReq) error {
 
-	signal := domain.NewSignal(req.Address, req.Port, time.Now().UTC())
+	signal := domain.NewSignal(req.Address, req.Port)
 
 	err := uc.signalRepo.Create(signal)
 	if err != nil {

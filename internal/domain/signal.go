@@ -1,20 +1,14 @@
 package domain
 
-import (
-	"time"
-)
-
 type Signal struct {
-	ID        int
-	Address   string
-	Port      int
-	CreatedAt time.Time
+	ID      int
+	Address string
+	Port    int
 }
 
-func NewSignal(address string, port int, createdAt time.Time) *Signal {
+func NewSignal(address string, port int) *Signal {
 	return &Signal{
-		Address:   address,
-		Port:      port,
-		CreatedAt: createdAt,
+		Address: address,
+		Port:    port,
 	}
 }

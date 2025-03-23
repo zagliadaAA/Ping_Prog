@@ -8,9 +8,9 @@ import (
 )
 
 func (r *Repo) Create(s *domain.Signal) error {
-	query := "INSERT INTO signals(address, port, created_at) VALUES ($1, $2, $3);"
+	query := "INSERT INTO signals(address, port) VALUES ($1, $2);"
 
-	err := r.cluster.Conn.QueryRow(context.Background(), query, s.Address, s.Port, s.CreatedAt)
+	_, err := r.cluster.Conn.Exec(context.Background(), query, s.Address, s.Port)
 
 	if err != nil {
 		return fmt.Errorf("createSignal: error creating signal: %w", err)
