@@ -16,4 +16,5 @@ func NewUseCase(signalRepo signalRepo) *UseCase {
 
 type signalRepo interface {
 	Create(signal *domain.Signal) error
+	GetAllSignals() ([]domain.Signal, error)
 }

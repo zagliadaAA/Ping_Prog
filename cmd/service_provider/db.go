@@ -7,9 +7,9 @@ import (
 	"ping_prog/internal/adapter/postgres/config"
 )
 
-func (sp *ServiceProvider) GetDbCluster(ctx context.Context) *config.Cluster {
+func (sp *ServiceProvider) GetDbCluster() *config.Cluster {
 	if sp.dbCluster == nil {
-		dbCluster, err := config.NewCluster(ctx)
+		dbCluster, err := config.NewCluster(context.Background())
 		if err != nil {
 			log.Fatal(err)
 		}

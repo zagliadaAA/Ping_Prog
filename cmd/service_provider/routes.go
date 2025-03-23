@@ -9,6 +9,7 @@ func (sp *ServiceProvider) GetRoutes() *http.ServeMux {
 	mux := http.NewServeMux()
 	// signal
 	mux.HandleFunc("POST /signals", sp.getSignalController().Create)
+	mux.HandleFunc("/signals", sp.getSignalController().Create)
 
 	/*mux.HandleFunc("DELETE /clients/{id}", sp.getClientController().Delete)
 	mux.HandleFunc("PUT /clients/{id}", sp.getClientController().Update)
