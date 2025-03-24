@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -10,10 +11,10 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func (b *Bot) addSignal(message *tgbotapi.Message) {
+func (b *Bot) addSignal(ctx context.Context, message *tgbotapi.Message) {
 	err := validateAddSignal(message)
 	if err != nil {
-		b.sendMessage(message.Chat.ID, fmt.Sprintf("Ошибка: %v", err))
+		b.sendMessage(int(message.Chat.ID), fmt.Sprintf("Ошибка: %v", err))
 		return
 	}
 
@@ -23,16 +24,17 @@ func (b *Bot) addSignal(message *tgbotapi.Message) {
 	port, _ := strconv.Atoi(parts[1])
 
 	// Добавляем адрес в бд
-	err = b.signalUC.Create(signal_usecase.CreateSignalReq{
-		Address: address,
-		Port:    port,
+	err = b.signalUseCase.Create(ctx, signal_usecase.CreateSignalReq{
+		Address:    address,
+		Port:       port,
+		UserChatId: int(message.Chat.ID),
 	})
 	if err != nil {
-		b.sendMessage(message.Chat.ID, fmt.Sprintf("❗Ошибка при добавлении адреса: %v", err))
+		b.sendMessage(int(message.Chat.ID), fmt.Sprintf("❗Ошибка при добавлении адреса: %v", err))
 		return
 	}
 
-	b.sendMessage(message.Chat.ID, fmt.Sprintf("✅Адрес %s с портом %v добавлен!", address, port))
+	b.sendMessage(int(message.Chat.ID), fmt.Sprintf("✅Адрес %s с портом %v добавлен!", address, port))
 }
 
 func validateAddSignal(message *tgbotapi.Message) error {

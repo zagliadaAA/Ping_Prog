@@ -7,7 +7,7 @@ import (
 	"ping_prog/internal/domain"
 )
 
-func (r *UserRepo) GetByChatID(ctx context.Context, chatID int64) (*domain.User, error) {
+func (r *UserRepo) GetByChatID(ctx context.Context, chatID int) (*domain.User, error) {
 	query := `SELECT id, username, chat_id FROM users WHERE chat_id = $1`
 
 	row := r.cluster.Conn.QueryRow(ctx, query, chatID)

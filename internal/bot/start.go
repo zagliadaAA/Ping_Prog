@@ -8,6 +8,11 @@ import (
 )
 
 func (b *Bot) Start() {
+	ctx := context.Background()
+
+	// запуск пинга фоном при старте бота
+	go b.backgroundPingTask(ctx)
+
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
@@ -23,20 +28,16 @@ func (b *Bot) Start() {
 
 		ctx := context.Background()
 
-		user, err := b.userUC.RegisterOrGet(ctx, username, chatID)
+		_, err := b.userUseCase.RegisterOrGet(ctx, username, int(chatID))
 		if err != nil {
 			log.Printf("failed to register user: %v", err)
 			continue
 		}
 
-		log.Printf("User: %+v", user)
+		//log.Printf("User: %+v", user)
 
 		if update.Message.IsCommand() {
-			b.handleCommand(update.Message)
+			b.handleCommand(ctx, update.Message)
 		}
-
-		// Отправляем ответ с тем же текстом
-		/*msg := tgbotapi.NewMessage(chatID, fmt.Sprintf("Вы написали: %s", update.Message.Text))
-		b.api.Send(msg)*/
 	}
 }

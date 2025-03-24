@@ -2,42 +2,17 @@ package main
 
 import (
 	"log"
-	"net/http"
-	"os"
 
 	"ping_prog/cmd/service_provider"
-	"ping_prog/internal/bot"
-
-	"github.com/joho/godotenv"
 )
 
 func main() {
 	sp := service_provider.NewServiceProvider()
 
-	// Загружаем переменные из .env файла
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("ошибка загрузки .env файла")
-	}
-
-	telegramToken := os.Getenv("TokenTelegramBot")
-	if telegramToken == "" {
-		log.Fatal("не удалось получить телеграм токен из .env файла")
-	}
-
-	b, err := bot.NewBot(telegramToken, sp.GetUserUseCase(), sp.GetSignalUseCase())
-	if err != nil {
-		log.Fatalf("ошибка инициализации бота: %v", err)
-	}
-
-	go b.Start()
+	go sp.GetTelegramBot().Start()
 	log.Println("бот запущен...")
 
-	// запуск сервера
-	err = http.ListenAndServe(":1565", sp.GetRoutes())
-	if err != nil {
-		panic(err)
-	}
+	select {} // это "пустой выбор" без каналов, чтобы программа не завершалась
 
 	/*err := godotenv.Load()
 	if err != nil { //письмо не отправится

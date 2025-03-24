@@ -1,12 +1,12 @@
 package domain
 
 type User struct {
-	ID       int64
+	ID       int
 	Username string
-	ChatID   int64
+	ChatID   int
 }
 
-func NewUser(username string, chatID int64) *User {
+func NewUser(username string, chatID int) *User {
 	return &User{
 		Username: username,
 		ChatID:   chatID,

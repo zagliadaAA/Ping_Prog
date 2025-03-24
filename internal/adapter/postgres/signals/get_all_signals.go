@@ -7,10 +7,15 @@ import (
 	"ping_prog/internal/domain"
 )
 
-func (r *Repo) GetAllSignals() ([]domain.Signal, error) {
-	query := "SELECT id, address, port FROM signals;"
+func (r *Repo) GetAllSignals(ctx context.Context, userName string) ([]domain.Signal, error) {
+	query := `
+		SELECT s.id, s.address, s.port
+		FROM signals s
+		JOIN users u ON s.user_id = u.id
+		WHERE u.username = $1;
+	`
 
-	rows, err := r.cluster.Conn.Query(context.Background(), query)
+	rows, err := r.cluster.Conn.Query(ctx, query, userName)
 	if err != nil {
 		return nil, fmt.Errorf("GetAllSignals: query error: %w", err)
 	}

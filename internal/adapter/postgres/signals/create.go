@@ -7,10 +7,10 @@ import (
 	"ping_prog/internal/domain"
 )
 
-func (r *Repo) Create(s *domain.Signal) error {
-	query := "INSERT INTO signals(address, port) VALUES ($1, $2);"
+func (r *Repo) Create(ctx context.Context, s *domain.Signal) error {
+	query := "INSERT INTO signals(address, port, user_id) VALUES ($1, $2, $3);"
 
-	_, err := r.cluster.Conn.Exec(context.Background(), query, s.Address, s.Port)
+	_, err := r.cluster.Conn.Exec(ctx, query, s.Address, s.Port, s.IDUser)
 
 	if err != nil {
 		return fmt.Errorf("createSignal: error creating signal: %w", err)

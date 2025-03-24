@@ -1,6 +1,7 @@
 package service_provider
 
 import (
+	"ping_prog/internal/adapter/postgres/results"
 	"ping_prog/internal/adapter/postgres/signals"
 	"ping_prog/internal/adapter/postgres/users"
 )
@@ -19,4 +20,12 @@ func (sp *ServiceProvider) GetUserRepository() *users.UserRepo {
 	}
 
 	return sp.userRepo
+}
+
+func (sp *ServiceProvider) GetResultsRepository() *results.ResultRepo {
+	if sp.resultRepo == nil {
+		sp.resultRepo = results.NewRepo(sp.GetDbCluster())
+	}
+
+	return sp.resultRepo
 }
