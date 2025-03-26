@@ -69,7 +69,7 @@ func (b *Bot) sendResultToDB(ctx context.Context, result bool, statistic *ping.P
 		Statistic: fmt.Sprintf("Потери: %.0f%%, Время: %v", statistic.Statistics().PacketLoss, statistic.Statistics().AvgRtt),
 		IDSignal:  IDSignal,
 		IDUser:    IDUser,
-		CreatedAt: time.Now(),
+		CreatedAt: time.Now().UTC(),
 	})
 	if err != nil {
 		log.Printf("ошибка при записи результата в бд: %v", err)

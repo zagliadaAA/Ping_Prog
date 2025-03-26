@@ -18,4 +18,6 @@ func NewUseCase(resultRepo resultRepo) *UseCase {
 
 type resultRepo interface {
 	Create(ctx context.Context, res *domain.Result) error
+	DeleteResultsForSignal(ctx context.Context, signal *domain.Signal) error
+	ShowAllResultsForNDays(ctx context.Context, userID int, days int) ([]*ResultView, error)
 }

@@ -14,6 +14,10 @@ func (b *Bot) showAllSignals(ctx context.Context, message *tgbotapi.Message) {
 		return
 	}
 
+	if len(signals) == 0 {
+		b.sendMessage(int(message.Chat.ID), fmt.Sprintf("У вас нет добавленных адресов"))
+	}
+
 	for _, val := range signals {
 		b.sendMessage(int(message.Chat.ID), fmt.Sprintf("ID: %v адрес: %s порт: %v\n", val.ID, val.Address, val.Port))
 	}

@@ -40,12 +40,12 @@ func (b *Bot) addSignal(ctx context.Context, message *tgbotapi.Message) {
 func validateAddSignal(message *tgbotapi.Message) error {
 	args := message.CommandArguments()
 	if args == "" {
-		return fmt.Errorf("❗️не переданы адрес и порт, необходимо /signals <адрес> <порт>")
+		return fmt.Errorf("❗️не переданы адрес и порт, необходимо /add <адрес> <порт>")
 	}
 
 	parts := strings.Fields(args)
 	if len(parts) != 2 {
-		return fmt.Errorf("❗️недостаточно аргументов, необходимо /signals <адрес> <порт>")
+		return fmt.Errorf("❗️недостаточно аргументов, необходимо /add <адрес> <порт>")
 	}
 
 	_, err := strconv.Atoi(parts[1])

@@ -12,9 +12,11 @@ func (b *Bot) handleCommand(ctx context.Context, message *tgbotapi.Message) {
 		b.addSignal(ctx, message)
 	case "show_all": // показать все добавленные адреса
 		b.showAllSignals(ctx, message)
+	case "show_results": // показать все результаты пинга за последние n дней
+		b.showAllResultsForNDays(ctx, message)
 	case "status": // статус бота
 		b.statusBot(message)
-	case "delete": // удаление address ping из таблицы signals
+	case "delete": // удаление address ping из таблицы signals и таблицы results
 		b.deleteSignal(ctx, message)
 	case "start": // приветствие при старте бота
 		b.helloUser(message)

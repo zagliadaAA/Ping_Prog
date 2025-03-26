@@ -18,6 +18,7 @@ func NewUseCase(userRepo userRepo) *UseCase {
 
 type userRepo interface {
 	Create(ctx context.Context, user *domain.User) error
+	GetByUserName(ctx context.Context, userName string) (*domain.User, error)
 	GetByChatID(ctx context.Context, chatID int) (*domain.User, error)
 	GetByID(ctx context.Context, userID int) (*domain.User, error)
 }

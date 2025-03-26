@@ -23,15 +23,14 @@ func (b *Bot) Start() {
 			continue
 		}
 
-		username := update.Message.From.UserName
+		userName := update.Message.From.UserName
 		chatID := update.Message.Chat.ID
 
 		ctx := context.Background()
 
-		_, err := b.userUseCase.RegisterOrGet(ctx, username, int(chatID))
+		_, err := b.userUseCase.Create(ctx, userName, int(chatID))
 		if err != nil {
-			log.Printf("failed to register user: %v", err)
-			continue
+			log.Println(err)
 		}
 
 		//log.Printf("User: %+v", user)

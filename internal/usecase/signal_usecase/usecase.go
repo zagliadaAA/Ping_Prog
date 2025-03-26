@@ -21,6 +21,7 @@ func NewUseCase(signalRepo signalRepo, userRepo userRepo) *UseCase {
 type signalRepo interface {
 	Create(ctx context.Context, s *domain.Signal) error
 	Delete(ctx context.Context, id int) error
+	GetByID(ctx context.Context, signalID int, userID int) (*domain.Signal, error)
 	GetAllSignals(ctx context.Context, userName string) ([]domain.Signal, error)
 	GetActiveSignalsGroupedByUser(ctx context.Context) (map[int][]domain.Signal, error)
 }
