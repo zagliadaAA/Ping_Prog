@@ -48,7 +48,6 @@ func (b *Bot) showAllResultsForNDays(ctx context.Context, message *tgbotapi.Mess
 		loc = time.UTC // fallback
 	}
 
-	// Пока что используем UTC
 	var builder strings.Builder
 	for i, res := range results {
 		status := "✅ Успех"
