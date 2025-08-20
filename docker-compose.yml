@@ -14,8 +14,8 @@ services:
       - pgdata:/var/lib/postgresql/data
 
   migrations:
-    build: .   #для запуска из проекта
-    #image: artizzzz/ping_prog:latest
+    #build: .   #для запуска из проекта
+    image: artizzzz/ping_prog:latest
     container_name: goose_migrations
     depends_on:
       - postgres
@@ -25,18 +25,18 @@ services:
       up
 
   app:
-    build: .   #для запуска из проекта
-    #image: artizzzz/ping_prog:latest
+    #build: .   #для запуска из проекта
+    image: artizzzz/ping_prog:latest
     container_name: myapp
     depends_on:
       - postgres
       - migrations
-    env_file:
-      - cmd/.env
+    #env_file:
+    #  - cmd/.env
     # без проекта убрать env_file и указать напрямую бот токен
     environment:
       DATABASE_URL: "postgres://postgres:123@postgres:5432/ping_prog?sslmode=disable"
-      #TokenTelegramBot: "63673......"
+      #TokenTelegramBot: "63673......"    #!!!!!!!!!!!!!!!!!!!
     restart: always
 
 volumes:
