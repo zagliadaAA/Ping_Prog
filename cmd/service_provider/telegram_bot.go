@@ -5,15 +5,13 @@ import (
 	"os"
 
 	"ping_prog/internal/bot"
-
-	"github.com/joho/godotenv"
 )
 
 func (sp *ServiceProvider) GetTelegramBot() *bot.Bot {
-	err := godotenv.Load()
+	/*err := godotenv.Load()
 	if err != nil {
 		log.Fatalf("ошибка загрузки .env файла")
-	}
+	}*/
 
 	telegramToken := os.Getenv("TokenTelegramBot")
 	if telegramToken == "" {
