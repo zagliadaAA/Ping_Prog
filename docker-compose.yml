@@ -1,26 +1,39 @@
-version: '3.8'
+version: "3.9"
 
 services:
   postgres:
-    image: postgres:15-alpine
+    image: postgres:15
+    container_name: my_postgres
     environment:
       POSTGRES_DB: ping_prog
-      POSTGRES_PASSWORD: 123
       POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
     ports:
-      - "5434:5432"
+      - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
 
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    environment:
-      - DATABASE_URL=postgres://postgres:123@postgres:5432/ping_prog?sslmode=disable
+  migrations:
+    build: .
+    container_name: goose_migrations
     depends_on:
       - postgres
-    restart: unless-stopped
+    command: >
+      goose -dir ./db/migrations
+      postgres "host=postgres port=5432 user=postgres password=123 dbname=ping_prog sslmode=disable"
+      up
+
+  app:
+    build: .
+    container_name: myapp
+    depends_on:
+      - postgres
+      - migrations
+    env_file:
+      - cmd/.env
+    environment:
+      DATABASE_URL: "postgres://postgres:123@postgres:5432/ping_prog?sslmode=disable"
+    restart: always
 
 volumes:
-  postgres_data:
+  pgdata:

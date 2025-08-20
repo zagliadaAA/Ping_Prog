@@ -1,44 +1,29 @@
-# Используем официальный образ Golang
+# build stage
 FROM golang:1.23-alpine AS builder
 
-# Устанавливаем необходимые зависимости
-RUN apk add --no-cache make git
-
-# Устанавливаем рабочую директорию в контейнере
 WORKDIR /app
 
-# Копируем go.mod и go.sum файлы
 COPY go.mod go.sum ./
-
-# Загружаем зависимости
 RUN go mod download
 
-# Копируем весь исходный код проекта
 COPY . .
 
-# Устанавливаем goose для миграций
-RUN go install github.com/pressly/goose/v3/cmd/goose@latest
+RUN go build -o myapp ./cmd/main.go
 
-# Собираем приложение
-RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/main.go
+# runtime stage
+FROM debian:bookworm-slim
 
-# Финальный образ
-FROM alpine:latest
-
-# Устанавливаем необходимые зависимости
-RUN apk add --no-cache postgresql-client
-
-# Устанавливаем рабочую директорию
 WORKDIR /root/
 
-# Копируем собранное приложение
-COPY --from=builder /app/main .
-COPY --from=builder /app/db/migrations ./db/migrations
-COPY --from=builder /go/bin/goose /usr/local/bin/goose
-COPY --from=builder /app/cmd/.env .env
+# goose нужен для миграций
+RUN apt-get update && apt-get install -y wget ca-certificates \
+    && wget -qO - https://go.dev/dl/go1.22.0.linux-amd64.tar.gz \
+    && tar -C /usr/local -xzf go1.22.0.linux-amd64.tar.gz \
+    && ln -s /usr/local/go/bin/go /usr/local/bin/go \
+    && go install github.com/pressly/goose/v3/cmd/goose@latest \
+    && rm -rf /var/lib/apt/lists/*
 
-# Выдаем права на запуск
-RUN chmod +x main
+COPY --from=builder /app/myapp .
+COPY db/migrations ./db/migrations
 
-# Команда запуска
-CMD sh -c "goose -dir ./db/migrations postgres \"$DATABASE_URL\" up && ./main"
+CMD ["./myapp"]
