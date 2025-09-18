@@ -64,18 +64,30 @@ func (b *Bot) showAllResultsForNDays(ctx context.Context, message *tgbotapi.Mess
 	text := builder.String()
 
 	// Telegram ограничение — 4096 символов
-	const chunkSize = 4000
+	const chunkSize = 4096
 
-	for i := 0; i < len(text); i += chunkSize {
-		end := i + chunkSize
-		if end > len(text) {
-			end = len(text)
+	r := []rune(text)
+	for start := 0; start < len(r); {
+		end := start + chunkSize
+		if end > len(r) {
+			end = len(r)
+		} else {
+			// попробуем найти последний перенос строки, чтобы не рвать строку посередине
+			for j := end - 1; j > start; j-- {
+				if r[j] == '\n' {
+					end = j + 1
+					break
+				}
+			}
 		}
-		msg := tgbotapi.NewMessage(message.Chat.ID, text[i:end])
-		_, err = b.api.Send(msg)
-		if err != nil {
+
+		msg := tgbotapi.NewMessage(message.Chat.ID, string(r[start:end]))
+		if _, err := b.api.Send(msg); err != nil {
 			b.sendMessage(int(message.Chat.ID), "❗Ошибка отправки результатов:")
 			return
 		}
+
+		start = end
 	}
+
 }
