@@ -2,6 +2,7 @@ package bot
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -22,6 +23,19 @@ func (b *Bot) addSignal(ctx context.Context, message *tgbotapi.Message) {
 	parts := strings.Fields(args)
 	address := parts[0]
 	port, _ := strconv.Atoi(parts[1])
+
+	signals, err := b.signalUseCase.GetAllSignals(ctx, message.From.UserName)
+	if err != nil {
+		b.sendMessage(int(message.Chat.ID), fmt.Sprintf("❗Ошибка при получении адресов пользователя: %v", err))
+		return
+	}
+	for _, signal := range signals {
+		if signal.Address == address && signal.Port == port {
+			err = errors.New("адрес уже существует")
+			b.sendMessage(int(message.Chat.ID), fmt.Sprintf("❗Ошибка при добавлении адреса: %v", err))
+			return
+		}
+	}
 
 	// Добавляем адрес в бд
 	err = b.signalUseCase.Create(ctx, signal_usecase.CreateSignalReq{
@@ -48,9 +62,13 @@ func validateAddSignal(message *tgbotapi.Message) error {
 		return fmt.Errorf("❗️недостаточно аргументов, необходимо /add <адрес> <порт>")
 	}
 
-	_, err := strconv.Atoi(parts[1])
+	port, err := strconv.Atoi(parts[1])
 	if err != nil {
 		return fmt.Errorf("❗️не удалось преобразовать порт в int")
+	}
+
+	if port < 1 || port > 65535 {
+		return fmt.Errorf("❗Порт должен быть в диапазоне 1–65535")
 	}
 
 	return nil
