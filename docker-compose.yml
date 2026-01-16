@@ -12,6 +12,7 @@ services:
       - "5434:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    restart: always
 
   migrations:
     #build: .   #для запуска из проекта
@@ -23,6 +24,7 @@ services:
       goose -dir ./db/migrations
       postgres "host=postgres port=5432 user=postgres password=123 dbname=ping_prog sslmode=disable"
       up
+    restart: "no"
 
   app:
     #build: .   #для запуска из проекта

@@ -17,6 +17,7 @@ func NewCluster(ctx context.Context) (*Cluster, error) {
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
 		dsn = "postgres://localhost:5433?dbname=ping_prog&user=postgres&password=123&sslmode=disable"
+		//dsn = "postgres://192.168.0.177:5434?dbname=ping_prog&user=postgres&password=123&sslmode=disable"
 	}
 
 	fmt.Printf("dsn: %s\n", dsn)
