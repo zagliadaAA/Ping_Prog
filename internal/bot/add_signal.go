@@ -67,8 +67,8 @@ func validateAddSignal(message *tgbotapi.Message) error {
 		return fmt.Errorf("❗️не удалось преобразовать порт в int")
 	}
 
-	if port < 1 || port > 65535 {
-		return fmt.Errorf("❗Порт должен быть в диапазоне 1–65535")
+	if port < 0 || port > 65535 {
+		return fmt.Errorf("❗Порт должен быть в диапазоне 0–65535")
 	}
 
 	return nil

@@ -13,7 +13,7 @@ type Cluster struct {
 }
 
 func NewCluster(ctx context.Context) (*Cluster, error) {
-	//dsn := fmt.Sprintf("postgres://localhost:5433?dbname=ping_prog&user=postgres&password=123&sslmode=disable")
+	//dsn := fmt.Sprintf("postgres://localhost:5432?dbname=ping_prog&user=postgres&password=123&sslmode=disable")
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
 		dsn = "postgres://localhost:5433?dbname=ping_prog&user=postgres&password=123&sslmode=disable"
